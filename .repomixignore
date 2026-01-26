@@ -1,0 +1,10 @@
+# Generated Data
+dataset/
+checkpoints/
+*.csv
+
+# Virtual Environment
+venv/
+
+# Python Cache
+__pycache__/
