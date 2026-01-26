@@ -167,7 +167,6 @@ python link_jira_github.py
 - Some issues have multiple `fix_versions` (creates multiple rows in release metrics)
 - Commits may reference multiple Jira issues
 - Backdated commits (commit before issue creation) are flagged
-- Files in `duplicate/` directory are not modified
 
 ## License
 
