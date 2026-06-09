@@ -6,14 +6,16 @@
 
 ## Project Status
 
-🎯 **Phase 1: COMPLETE** ✅ (March 9, 2026)
-- ✅ Data Collection (3 scripts, 10 datasets)
-- ✅ Feature Engineering (47 features, 111 releases)
-- ✅ Data Validation (balanced, high quality)
+✅ **Phase 1: COMPLETE** (March 9, 2026)
+- Data Collection (3 scripts, 10 datasets)
+- Feature Engineering (47 features, 111 releases)
+- Data Validation (balanced, high quality)
 
-🚀 **Phase 2: IN PROGRESS** - Predictive Modeling
-
-See [PHASE1_SUMMARY.md](PHASE1_SUMMARY.md) for detailed completion report.
+✅ **Phase 2: COMPLETE** (April 14, 2026)
+- Baseline models (Naive, Persistence, Moving Average)
+- ML models (Logistic Regression, Random Forest, XGBoost, SVM)
+- Time-series cross-validation
+- SHAP feature importance & hypothesis testing (H1–H4)
 
 ## Overview
 
@@ -30,12 +32,17 @@ project/
 ├── fetch_jira_issues.py        # Collect Jira issues
 ├── fetch_github_issues.py      # Collect GitHub commits & networks
 ├── link_jira_github.py         # Link Jira & GitHub data
-├── feature_engineering.py      # ✨ NEW: Calculate all ML features
-├── validate_features.py        # ✨ NEW: Validate feature quality
+├── feature_engineering.py      # Calculate all ML features (Phase 1)
+├── validate_features.py        # Validate feature quality
+├── validate_preparation.py     # Validate prepared data splits
+├── prepare_data.py             # Prepare and split data for modeling
+├── create_balanced_versions.py # Class balancing utilities
+├── train.py                    # Baseline + ML model training (Phase 2)
+├── analyze.py                  # Hypothesis testing & SHAP analysis
 ├── dataset/                    # All output data (auto-created)
+├── results/                    # Model results, SHAP plots, trained models
 ├── checkpoints/                # Progress checkpoints (auto-created)
-├── README.md                   # This file
-└── PHASE1_SUMMARY.md           # ✨ NEW: Phase 1 completion report
+└── README.md                   # This file
 ```
 
 ## Quick Start
@@ -222,31 +229,23 @@ python feature_engineering.py
 - `development_duration_days`: Days from first to last commit
 - `days_to_first_commit`: Days from issue creation to first commit
 
-## Research Questions (Data Ready)
-
-**Phase 1 Complete - Features Engineered:**
+## Research Questions
 
 1. **RQ1:** To what extent do code churn metrics correlate with sprint velocity degradation?
-   - ✅ 10 churn features calculated
+   - ✅ 10 churn features calculated and evaluated
    - Key correlation: `total_churn` vs `is_degraded`
 
 2. **RQ2:** Can developer collaboration network characteristics predict velocity changes?
-   - ✅ 17 network features calculated
+   - ✅ 17 network features calculated and evaluated
    - Key findings: density (0.030), centralization (0.708), turnover (24.3%)
 
 3. **RQ3:** What is the relative importance of social vs technical metrics?
-   - ✅ Feature variants ready: Model A (churn), Model B (network), Model C (combined)
+   - ✅ Model A (churn), Model B (network), Model C (combined) compared via SHAP
    - Top correlations: velocity_change (-0.636), prev_velocity (+0.363)
 
 4. **RQ4:** How accurately can ML models predict degradation vs baselines?
-   - ✅ Dataset ready: 111 samples, 47 features, balanced classes
-   - 🚀 Next: Implement baseline + ML models
-
-**Phase 2 Tasks - Predictive Modeling:**
-- [ ] Baseline models (Naive, Previous Velocity, Moving Average)
-- [ ] ML models (Logistic Regression, Random Forest, XGBoost, SVM)
-- [ ] Time-series cross-validation
-- [ ] SHAP feature importance analysis
+   - ✅ Baseline + ML models trained and evaluated with time-series CV
+   - ✅ SHAP feature importance and hypothesis testing complete
 
 ## Data Quality
 
@@ -284,8 +283,11 @@ python feature_engineering.py
 - **fetch_jira_issues.py**: ~5-10 minutes
 - **fetch_github_issues.py**: ~2-3 hours (full Kafka history)
 - **link_jira_github.py**: ~5-10 minutes
-- **feature_engineering.py**: ~7 minutes ✨
+- **feature_engineering.py**: ~7 minutes
 - **validate_features.py**: <1 minute
+- **prepare_data.py**: <1 minute
+- **train.py**: ~2-5 minutes
+- **analyze.py**: ~1-2 minutes
 
 ## Notes
 
@@ -312,18 +314,17 @@ python feature_engineering.py    # Generate 47 ML features
 python validate_features.py      # Check data quality
 ```
 
-### For Modeling (Phase 2 - Next Steps)
+### For Modeling (Phase 2 Complete) ✅
 ```bash
-# To be implemented:
-python baseline_models.py        # Naive, Previous Velocity, Moving Avg
-python ml_models.py              # Logistic, RF, XGBoost, SVM
-python evaluate_models.py        # Cross-validation, metrics, SHAP
+python prepare_data.py           # Prepare and split data
+python train.py                  # Train baseline + ML models
+python analyze.py                # Hypothesis testing & SHAP analysis
 ```
 
 ### Key Files to Use
 - **For ML modeling:** `dataset/ml_dataset_YYYYMMDD_HHMMSS.csv`
-- **For exploration:** `PHASE1_SUMMARY.md`
 - **For validation:** `dataset/validation_summary.csv`
+- **For results:** `results/model_results_*.csv`, `results/shap_importance_*.csv`
 
 ## Troubleshooting
 
