@@ -1,0 +1,12 @@
+hypothesis,feature,spearman_r,p_value
+H1 — Network centralization & density,degree_centralization,-0.13193287361326345,0.16749244889088266
+H1 — Network centralization & density,density,0.05549107988884043,0.5629517694077122
+H1 — Network centralization & density,density_change,0.24858502347504868,0.008518670556068446
+H1 — Network centralization & density,centralization_change,-0.37372691456385454,5.338350286407826e-05
+H1 — Network centralization & density,max_betweenness,0.02264932098639873,0.8134680407330518
+H1 — Network centralization & density,avg_clustering,-0.21686819997373347,0.022238790575790965
+H2 — Churn concentration & inequality,churn_concentration,-0.04388296314121694,0.647439289016273
+H2 — Churn concentration & inequality,developer_churn_inequality,-0.19676554440739205,0.03846474760215518
+H2 — Churn concentration & inequality,churn_volatility,-0.09710875069314458,0.31062031563009296
+H2 — Churn concentration & inequality,total_churn,-0.19280192193012083,0.04262526463462408
+H2 — Churn concentration & inequality,refactoring_ratio,0.009625961419219458,0.9201299107514193

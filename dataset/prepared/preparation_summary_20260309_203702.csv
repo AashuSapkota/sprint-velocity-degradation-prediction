@@ -1,0 +1,2 @@
+timestamp,n_features,n_train,n_val,n_test,train_degraded_pct,val_degraded_pct,test_degraded_pct,scaling_method,balancing_method
+20260309_203702,40,79,16,16,45.56962025316456,37.5,43.75,standard,none

@@ -1,0 +1,2 @@
+total_releases,total_features,degraded_releases,stable_releases,missing_values,has_infinite,zero_variance_features,highly_correlated_pairs
+111,47,49,62,1,False,0,25

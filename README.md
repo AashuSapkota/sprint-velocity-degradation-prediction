@@ -4,24 +4,38 @@
 
 **Repository:** Apache Kafka Issue & Commit Data Collection
 
+## Project Status
+
+🎯 **Phase 1: COMPLETE** ✅ (March 9, 2026)
+- ✅ Data Collection (3 scripts, 10 datasets)
+- ✅ Feature Engineering (47 features, 111 releases)
+- ✅ Data Validation (balanced, high quality)
+
+🚀 **Phase 2: IN PROGRESS** - Predictive Modeling
+
+See [PHASE1_SUMMARY.md](PHASE1_SUMMARY.md) for detailed completion report.
+
 ## Overview
 
 This project collects and analyzes data from the Apache Kafka project to predict sprint velocity degradation using:
-- Code churn metrics from GitHub commits
-- Developer interaction networks (co-commit patterns)
+- Code churn metrics from GitHub commits (10 features)
+- Developer interaction networks & co-commit patterns (17 features)
 - File coupling networks (architectural dependencies)
-- Jira issue tracking data (velocity metrics)
+- Jira issue tracking data & velocity metrics (7 features)
 
 ## Project Structure
 
 ```
 project/
-├── fetch_jira_issues.py      # Collect Jira issues
-├── fetch_github_issues.py    # Collect GitHub commits & networks
-├── link_jira_github.py       # Link Jira & GitHub data
-├── dataset/                  # All output data (auto-created)
-├── checkpoints/              # Progress checkpoints (auto-created)
-└── README.md                 # This file
+├── fetch_jira_issues.py        # Collect Jira issues
+├── fetch_github_issues.py      # Collect GitHub commits & networks
+├── link_jira_github.py         # Link Jira & GitHub data
+├── feature_engineering.py      # ✨ NEW: Calculate all ML features
+├── validate_features.py        # ✨ NEW: Validate feature quality
+├── dataset/                    # All output data (auto-created)
+├── checkpoints/                # Progress checkpoints (auto-created)
+├── README.md                   # This file
+└── PHASE1_SUMMARY.md           # ✨ NEW: Phase 1 completion report
 ```
 
 ## Quick Start
@@ -29,7 +43,7 @@ project/
 ### Prerequisites
 
 ```bash
-pip install pandas numpy jira pydriller
+pip install pandas numpy jira pydriller networkx
 ```
 
 ### Data Collection Workflow
@@ -59,6 +73,19 @@ python link_jira_github.py
 - Aggregates metrics by issue and release
 - Creates final dataset
 - Output: 4 CSV files in `dataset/`
+
+**Step 4: Feature Engineering ✨ NEW**
+```bash
+python feature_engineering.py
+```
+- Extracts 111 release cycles from Kafka history
+- Calculates velocity degradation labels (44.1% degraded)
+- Computes 10 advanced code churn features
+- Builds temporal co-commit networks (7-day windows)
+- Calculates 17 developer network features
+- Creates ML-ready dataset: 111 releases × 47 features
+- Output: `ml_dataset_*.csv` + 3 feature subsets
+- Runtime: ~7 minutes
 
 ## Output Datasets
 
@@ -110,56 +137,155 @@ python link_jira_github.py
 - Aggregated metrics per release
 - Use: Sprint/release velocity analysis
 
-**final_dataset_*.csv** ⭐ **PRIMARY DATASET**
-- Complete dataset with all features
-- Columns: 32 features including:
-  - Commit metrics: num_commits, total_churn, avg_churn_per_commit
-  - Developer metrics: num_developers, multi_developer
-  - Temporal metrics: resolution_time_days, development_duration_days
-  - Issue metadata: type, priority, status, fix_versions
-  - Time features: year, quarter, month
-  - Binary flags: is_resolved, is_bug, is_high_priority
-- Use: **START HERE** for analysis
+### From `feature_engineering.py` ✨ **ML-READY DATASETS**
 
-## Key Metrics
+**ml_dataset_*.csv** ⭐ **PRIMARY DATASET FOR MODELING**
+- Complete ML-ready dataset with 47 features
+- 111 releases (samples) from Apache Kafka history (2011-2026)
+- Target variable: `is_degraded` (binary: 1=degraded, 0=stable)
+- Class distribution: 44.1% degraded, 55.9% stable (well-balanced)
 
-### Code Churn Metrics
+**Feature Categories:**
+1. **Velocity Features (7):**
+   - weighted_velocity, velocity_change_pct, issue_count
+   - bugs, improvements, new_features, tasks
+   - velocity_per_day
+
+2. **Code Churn Features (10):**
+   - total_commits, total_churn
+   - churn_concentration (Gini coefficient)
+   - developer_churn_inequality (Gini coefficient)
+   - refactoring_ratio (deletion/insertion ratio)
+   - file_hotspots (90th percentile)
+   - avg_commit_size, churn_volatility
+   - unique_developers, avg_files_per_commit
+
+3. **Developer Network Features (17):**
+   - Structural: num_nodes, num_edges, density, avg_clustering
+   - Diameter, num_components, giant_component_size
+   - Centrality: avg_degree, max_betweenness, degree_centralization
+   - avg_closeness
+   - Temporal: network_jaccard, nodes_added, nodes_removed
+   - density_change, centralization_change, turnover_rate
+
+4. **Derived Features (3):**
+   - commits_per_day, churn_per_developer, edges_per_node
+
+**velocity_features_*.csv**
+- Velocity metrics and degradation labels per release
+- Use: Baseline modeling, velocity trend analysis
+
+**churn_features_*.csv**
+- Advanced code churn metrics per release
+- Use: Technical dimension analysis (Model A)
+
+**network_features_*.csv**
+- Developer network metrics per release
+- Use: Social dimension analysis (Model B)
+
+### From `validate_features.py`
+
+**validation_summary.csv**
+- Data quality report
+- Feature statistics and correlations
+
+**final_dataset_*.csv** (Legacy)
+- Old format from link_jira_github.py
+- Use: ml_dataset_*.csv instead for modeling
+
+## Key Metrics (Phase 1 Complete)
+
+### Velocity Metrics ✅
+- `weighted_velocity`: Issues × (type_weight × priority_weight)
+- `velocity_change_pct`: % change from previous release
+- `is_degraded`: Binary label (1 if change < -10%, else 0)
+- `velocity_per_day`: Normalized by release duration
+- Mean velocity: 113.7 | 49 degraded (44.1%) | 62 stable (55.9%)
+
+### Code Churn Metrics ✅
 - `total_churn`: Total lines changed (insertions + deletions)
-- `insertions`: Lines added
-- `deletions`: Lines removed
-- `num_commits`: Number of commits
-- `avg_churn_per_commit`: Average churn per commit
+- `churn_concentration`: Gini coefficient (0.757 mean = localized)
+- `developer_churn_inequality`: Gini of commits/dev (0.701 mean)
+- `refactoring_ratio`: Proportion with deletion/insertion > 0.8 (35.2%)
+- `churn_volatility`: Std dev of daily churn
+- `file_hotspots`: Files in 90th percentile of changes
+- `avg_commit_size`: Mean lines changed per commit
 
-### Developer Metrics
-- `num_developers`: Unique developers per issue
-- `multi_developer`: Flag for multi-developer issues
-- Developer network centrality (from network analysis)
+### Developer Network Metrics ✅
+- **Structural:** density (0.030 mean), clustering, diameter, components
+- **Centrality:** degree (708 centralization = high inequality), betweenness, closeness
+- **Temporal:** turnover_rate (24.3% mean), network_jaccard, density_change
+- **Construction:** 7-day temporal co-commit windows
 
-### Temporal Metrics
+### Temporal Metrics (Legacy - from issue_metrics)
 - `resolution_time_days`: Days from creation to resolution
 - `development_duration_days`: Days from first to last commit
 - `days_to_first_commit`: Days from issue creation to first commit
 
-### Velocity Metrics (Derived)
-- Issues completed per sprint
-- Average resolution time per sprint
-- Total churn per sprint
-- Velocity change (%)
-- Degradation flag
+## Research Questions (Data Ready)
 
-## Research Questions
+**Phase 1 Complete - Features Engineered:**
 
-1. **RQ1:** Can code churn metrics predict sprint velocity degradation?
-2. **RQ2:** Do developer interaction networks correlate with velocity changes?
-3. **RQ3:** How do file coupling patterns relate to development velocity?
-4. **RQ4:** What combination of metrics best predicts velocity degradation?
+1. **RQ1:** To what extent do code churn metrics correlate with sprint velocity degradation?
+   - ✅ 10 churn features calculated
+   - Key correlation: `total_churn` vs `is_degraded`
+
+2. **RQ2:** Can developer collaboration network characteristics predict velocity changes?
+   - ✅ 17 network features calculated
+   - Key findings: density (0.030), centralization (0.708), turnover (24.3%)
+
+3. **RQ3:** What is the relative importance of social vs technical metrics?
+   - ✅ Feature variants ready: Model A (churn), Model B (network), Model C (combined)
+   - Top correlations: velocity_change (-0.636), prev_velocity (+0.363)
+
+4. **RQ4:** How accurately can ML models predict degradation vs baselines?
+   - ✅ Dataset ready: 111 samples, 47 features, balanced classes
+   - 🚀 Next: Implement baseline + ML models
+
+**Phase 2 Tasks - Predictive Modeling:**
+- [ ] Baseline models (Naive, Previous Velocity, Moving Average)
+- [ ] ML models (Logistic Regression, Random Forest, XGBoost, SVM)
+- [ ] Time-series cross-validation
+- [ ] SHAP feature importance analysis
 
 ## Data Quality
 
-- **Jira Coverage:** ~18,000+ Kafka issues collected
-- **Commit Coverage:** ~50-60% of commits reference Jira issues
-- **Date Range:** 2011 - Present
+### Data Collection (Phase 0)
+- **Jira Issues:** 18,823 total (9,552 with fix_versions)
+- **GitHub Commits:** 16,887 total
+- **Commit Coverage:** ~64% reference Jira issues (10,881 links)
+- **Date Range:** 2011-07-19 to 2026-01-26
 - **File Types:** Java, Scala, Python, JavaScript, Kotlin
+- **Developer Pairs:** 101,681 collaboration edges
+- **File Authors:** 104,647 file-author relationships
+
+### Feature Engineering (Phase 1) ✅
+- **Releases Analyzed:** 111 (filtered: ≥3 issues per release)
+- **Features Generated:** 47 total
+- **Missing Values:** 1 (0.9% - commits_per_day)
+- **Infinite Values:** 0
+- **Zero Variance:** 0 features
+- **Class Balance:** 1:1.27 (excellent for ML)
+- **Highly Correlated Pairs:** 5 (will handle in modeling)
+
+### Top Correlations with Target (is_degraded)
+**Positive (degradation predictors):**
+- prev_weighted_velocity: +0.363
+- nodes_removed: +0.326
+
+**Negative (stability predictors):**
+- velocity_change: -0.636
+- bugs: -0.461
+- weighted_velocity: -0.448
+- issue_count: -0.428
+
+## Pipeline Execution Times
+
+- **fetch_jira_issues.py**: ~5-10 minutes
+- **fetch_github_issues.py**: ~2-3 hours (full Kafka history)
+- **link_jira_github.py**: ~5-10 minutes
+- **feature_engineering.py**: ~7 minutes ✨
+- **validate_features.py**: <1 minute
 
 ## Notes
 
@@ -167,6 +293,52 @@ python link_jira_github.py
 - Some issues have multiple `fix_versions` (creates multiple rows in release metrics)
 - Commits may reference multiple Jira issues
 - Backdated commits (commit before issue creation) are flagged
+- Network construction uses **7-day temporal windows** for co-commit relationships
+- Velocity degradation threshold: **-10%** (configurable)
+- Gini coefficient: 0 = perfect equality, 1 = perfect inequality
+
+## Quick Reference
+
+### For Data Collection (Already Complete)
+```bash
+python fetch_jira_issues.py      # Step 1: Get Jira issues
+python fetch_github_issues.py    # Step 2: Mine Git history
+python link_jira_github.py       # Step 3: Link data sources
+```
+
+### For Feature Engineering (Phase 1 Complete) ✅
+```bash
+python feature_engineering.py    # Generate 47 ML features
+python validate_features.py      # Check data quality
+```
+
+### For Modeling (Phase 2 - Next Steps)
+```bash
+# To be implemented:
+python baseline_models.py        # Naive, Previous Velocity, Moving Avg
+python ml_models.py              # Logistic, RF, XGBoost, SVM
+python evaluate_models.py        # Cross-validation, metrics, SHAP
+```
+
+### Key Files to Use
+- **For ML modeling:** `dataset/ml_dataset_YYYYMMDD_HHMMSS.csv`
+- **For exploration:** `PHASE1_SUMMARY.md`
+- **For validation:** `dataset/validation_summary.csv`
+
+## Troubleshooting
+
+**Q: Feature engineering is slow?**
+- The network calculation processes 111 releases with temporal windows
+- Expected runtime: ~7 minutes
+- Most time spent on network metrics (optimized with sliding window)
+
+**Q: Missing values in commits_per_day?**
+- Occurs for 1 release with 0-duration (same day release)
+- Safe to fill with median or 0
+
+**Q: High correlation between features?**
+- 5 pairs with correlation > 0.95 (e.g., total_churn ↔ total_commits)
+- Will use feature selection or regularization in modeling
 
 ## License
 

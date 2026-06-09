@@ -16,3 +16,7 @@ repomix-output.xml
 
 # OS Files
 .DS_Store
+
+# Docs
+docs/
+dissertation.tex

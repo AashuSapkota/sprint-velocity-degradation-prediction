@@ -2,3 +2,10 @@ jira==3.10.5
 numpy==2.4.1
 pandas==3.0.0
 PyDriller==2.9
+networkx==3.4.2
+scikit-learn==1.6.1
+imbalanced-learn==0.12.4
+xgboost==3.2.0
+shap==0.51.0
+matplotlib==3.10.8
+scipy==1.15.3
